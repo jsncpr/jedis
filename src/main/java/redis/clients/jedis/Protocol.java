@@ -29,13 +29,9 @@ public final class Protocol {
 
             for (String str : args) {
                 os.write(DOLLAR_BYTE);
-                final int size = RedisOutputStream.utf8Length(str);
+                final int size = str.length();
                 os.writeIntCrLf(size);
-                if (size == str.length())
-                    os.writeAsciiCrLf(str);
-                else {
-                    os.writeUtf8CrLf(str);
-                }
+                os.writeAsciiCrLf(str);
             }
             os.flush();
         } catch (IOException e) {
@@ -92,7 +88,11 @@ public final class Protocol {
             throw new JedisException(e);
         }
 
-        return new String(read, CHARSET);
+        char[] readUnsigned = new char[read.length];
+        for (int i = 0; i < read.length; i++) {
+            readUnsigned[i] = (char) read[i];
+        }
+        return new String(readUnsigned);
     }
 
     private Integer processInteger(RedisInputStream is) {
